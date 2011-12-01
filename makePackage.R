@@ -1,0 +1,9 @@
+library("roxygen")
+codeFiles=c("crukUtils-package.R","parse.R")
+package.skeleton(name="crukUtils",
+                 force=TRUE,
+                 code_files=codeFiles)
+roxygenize('crukUtils',
+           roxygen.dir='crukUtils',
+           copy.package=FALSE,
+           unlink.target=FALSE)
