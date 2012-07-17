@@ -13,7 +13,8 @@ lapply(names(resFrame), function(tbl)
 
 
 sql <- as.list(sprintf("CREATE INDEX %1$s_idx ON %1$s(id);", fieldDef$tabName[fieldDef$field=="id"]))
-sql <- c(sql, as.list(sprintf("CREATE INDEX %1$s_jidx ON %1$s(jid);", unique(na.omit(fieldDef$joyn)))))
+ind <- !is.na(fieldDef$joyn)
+sql <- c(sql, as.list(sprintf("CREATE INDEX %s_%s_jidx ON %s(%s);", fieldDef$tabName[ind], fieldDef$field[ind], fieldDef$tabName[ind], fieldDef$field[ind] )))
 
 
 lapply(sql, function(s) {print(s)
@@ -34,6 +35,7 @@ expandJoin <- function(tbl, dframe=NULL, matchto=NULL) {
     }
     reind <- match(names(newtab), fieldDef$field[ind])
     newtab <- newtab[!is.na(reind)]
+    onames <- names(newtab)
     names(newtab) <- fieldDef$text[ind][na.omit(reind)]
     if (is.null(dframe)) {
         dframe <- newtab
@@ -42,8 +44,8 @@ expandJoin <- function(tbl, dframe=NULL, matchto=NULL) {
     }
     for (itab in which(!is.na(fieldDef$joyn[ind]))) {
         tab <- fieldDef$joyn[ind][itab]
-        fie <- fieldDef$field[ind][itab]
-        dframe <- expandJoin(tab, dframe, resFrame[[fie]])
+        fie <- as.character(fieldDef$field[ind][itab])
+        dframe <- expandJoin(tab, dframe, newtab[[match(fie, onames)]])
     }
     return(dframe)
 }
