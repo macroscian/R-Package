@@ -74,10 +74,14 @@ rerun <- function(fname, newFile) {
 #' @param create if true, then create the directory
 #' @return return the path to the associated directory
 derivedDir <- function(target, create=FALSE) { #relies on environment variables set up in ~/.bashrc
+  if (grepl(Sys.getenv("my_working"),Sys.getenv(target))) {
     dr <- sub(Sys.getenv("my_working"),Sys.getenv(target),getwd())
     if (create)
-        dir.create(dr, recursive=TRUE)
+      dir.create(dr, recursive=TRUE)
     return(dr)
+  } else {
+    paste0(Sys.getenv(target), sub(Sys.getenv("my_working"), "", getwd()))
+  }
 }
 
 #' Initialise a closure that will contain variables that define the analysis
@@ -102,6 +106,12 @@ params_init <- function(...) {
                  wd=getwd(),
                  fVersion = vers
                  )
+        if (grepl(Sys.getenv("my_projects"),  getwd())) {
+          pth <- strsplit(sub(Sys.getenv("my_projects"), "",  getwd()), "/")[[1]]
+          prm$lab <- pth[1]
+          prm$scientist <- pth[2]
+          prm$project <- pth[3]
+        }
         if (length(names(list(...))) ==1) {
             return(unlist(list(...)))
         }
