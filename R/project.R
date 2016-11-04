@@ -74,7 +74,7 @@ rerun <- function(fname, newFile) {
 #' @param create if true, then create the directory
 #' @return return the path to the associated directory
 derivedDir <- function(target, create=FALSE) { #relies on environment variables set up in ~/.bashrc
-    dr <- sub(Sys.getenv("MY_WORKING"),Sys.getenv(target),getwd())
+    dr <- sub(Sys.getenv("my_working"),Sys.getenv(target),getwd())
     if (create)
         dir.create(dr, recursive=TRUE)
     return(dr)
@@ -91,11 +91,13 @@ params_init <- function(...) {
     function(...) {
         if (length(names(list(...)))>0)
             argu <<- modifyList(argu, list(...))
-        vers <- system2("git", "log -1 --pretty=format:%h", stdout=TRUE, stderr=FALSE)
-        if (length(vers)==0)
+        vers <- try(system2("git", "log -1 --pretty=format:%h", stdout=TRUE, stderr=FALSE), silent=TRUE)
+        if (length(vers)==0 || class(vers)=="try-error") {
             vers <- "Not under Version Control!"
-        if (any(grepl("^ M",system2("git", "status --porcelain", stdout=TRUE, stderr=FALSE))))
+        } else {
+          if (any(grepl("^ M",system2("git", "status --porcelain", stdout=TRUE, stderr=FALSE))))
             vers <- sprintf("%s-M", vers)
+        }
         prm <- c(argu,
                  wd=getwd(),
                  fVersion = vers

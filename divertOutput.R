@@ -1,8 +1,0 @@
-devNull=file("/dev/null", open="w")
-sink(devNull, type="output")
-sink(devNull, type="message")
-library(snapCGH)
-sink(type="output")
-sink(type="message")
-close(devNull)
-cat("hello")
