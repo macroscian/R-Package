@@ -1,0 +1,13 @@
+Package: crick.kellyg
+Title: Miscellaneous Functions 
+Version: 0.1
+Authors@R: person("Gavin", "Kelly", email = "gavin.kelly@crick.ac.uk",
+                  role = c("aut", "cre"))
+Author: Gavin Kelly [aut, cre]
+Maintainer: Gavin Kelly <gavin.kelly@crick.ac.uk>
+Description: Variety of miscellaneous functions.
+Imports:
+	digest
+Depends: R (>= 3.1.0)
+License: GPL (>= 2)
+LazyData: true
