@@ -64,7 +64,24 @@ rerun <- function(fname, newFile) {
     delta <- unlist(cF[c("added","deleted","changed")])
     return(length(delta)!=0)
 }
-    
+  
+
+projectFromDir <- function() {
+  parts <- strsplit(getwd(), "/")[[1]]
+  if (length(parts)!=10 || parts[7]!="projects") {
+    stop("Not in project directory")
+    return
+  }
+  res <- list(
+    bioinf=parts[6],
+    lab=parts[8],
+    scientist=parts[9],
+    project=parts[10]
+    )
+  res$type <- names(Filter(function(x) res$lab %in% dir(x), list("stp"="/camp/stp", "lab"="/camp/lab")))
+  res
+}
+  
 
 #' Work out related directory locations
 #'
@@ -84,6 +101,26 @@ derivedDir <- function(target, create=FALSE) { #relies on environment variables 
   }
 }
 
+derivedDirs <- function() { #relies on environment variables set up in ~/.bashrc
+  parts <- projectFromDir()
+  prefix <- Sys.getenv("my_lab")
+  res <- with(parts,
+              list(
+                wd=getwd(),
+                results="results",
+                objects="objects",
+                data="data",
+                output=file.path(prefix, "outputs", lab, scientist, "gavin.kelly", project),
+                html=file.path(prefix, "www", bioinf, "public_html/LIVE", lab, scientist, project),
+                web=file.path(paste0("https://shiny-bioinformatics.crick.ac.uk/~",bioinf),
+                              lab, scientist, project)
+              )
+              )
+  res
+}
+
+
+  
 #' Initialise a closure that will contain variables that define the analysis
 #'
 #' Create a closure that contains at least the version number and the working directory of the current file.  Additional name-value pairs can be added at init time, or alternatively the closure can be called with 'run-time' name-value pairs.  Calling the resulting closure with a character argument will return the parameter value; if there is no argument, the closure will return a list of all current name-values.
