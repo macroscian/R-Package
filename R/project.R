@@ -101,21 +101,33 @@ derivedDir <- function(target, create=FALSE) { #relies on environment variables 
   }
 }
 
-derivedDirs <- function() { #relies on environment variables set up in ~/.bashrc
+derivedDirs <- function(publish=NA, subResults=NA) { #relies on environment variables set up in ~/.bashrc
   parts <- projectFromDir()
-  prefix <- Sys.getenv("my_lab")
+  prefix <- sub("/$", "", Sys.getenv("my_lab", unset="."))
   res <- with(parts,
               list(
                 wd=getwd(),
                 results="results",
                 objects="objects",
                 data="data",
-                output=file.path(prefix, "outputs", lab, scientist, "gavin.kelly", project),
+                output=file.path(prefix, "outputs", lab, scientist, "gavin.kelly", project, publish),
                 html=file.path(prefix, "www", bioinf, "public_html/LIVE", lab, scientist, project),
                 web=file.path(paste0("https://shiny-bioinformatics.crick.ac.uk/~",bioinf),
-                              lab, scientist, project)
+                              lab, scientist, project),
+                input=file.path("//data.thecrick.org",
+                                sprintf("%s%s", ifelse(type=="lab", "lab-", ""), lab),
+                                "input", "babs", scientist, Sys.getenv("my_emailname"), project, publish)
               )
               )
+  if (!is.na(subResults)) {
+    res$results <- file.path(res$results, subResults)
+    }
+  if (is.na(publish)) {
+    res$output=res$results
+    res$input <- sub("/NA$", "", res$input)
+  } else {
+    res$results=res$output
+  }
   res
 }
 
@@ -133,17 +145,25 @@ params_init <- function(...) {
         if (length(names(list(...)))>0)
             argu <<- modifyList(argu, list(...))
         vers <- try(system2("git", "log -1 --pretty=format:%h", stdout=TRUE, stderr=FALSE), silent=TRUE)
+        gitTag <- try(suppressWarnings(system2("git", "describe --tags --exact", stdout=TRUE, stderr=FALSE)), silent=TRUE)
+        if (class(gitTag)=="try-error" || (!is.null(attr(gitTag, "status")) && attr(gitTag, "status")!=0)) {
+          gitTag <- NA
+        }
         if (length(vers)==0 || class(vers)=="try-error") {
-            vers <- "Not under Version Control!"
+          vers <- "Not under Version Control!"
+          gitTag <- NA
         } else {
-          if (any(grepl("^ M",system2("git", "status --porcelain", stdout=TRUE, stderr=FALSE))))
+          if (any(grepl("^ M",system2("git", "status --porcelain", stdout=TRUE, stderr=FALSE)))) {
             vers <- sprintf("%s-M", vers)
+            gitTag <- NA
+          }
         }
         prm <- c(argu,
                  wd=getwd(),
-                 fVersion = vers
+                 fVersion = vers,
+                 release=gitTag
                  )
-        if (grepl(Sys.getenv("my_projects"),  getwd())) {
+        if (!is.na(grepl(Sys.getenv("my_projects", unset=NA),  getwd()))) {
           pth <- strsplit(sub(Sys.getenv("my_projects"), "",  getwd()), "/")[[1]]
           prm$lab <- pth[1]
           prm$scientist <- pth[2]
