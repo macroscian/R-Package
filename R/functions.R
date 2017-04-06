@@ -1,3 +1,21 @@
+##' Loop counter
+##'
+##' show progress through a loop
+##' @title 
+##' @param n Number of iterations that will be carried out
+##' @return 
+##' @author 
+progressInit <- function(n, msg=NULL) {
+  t0 <- proc.time()
+  if (!is.null(msg)) {
+    cat(msg, "\n")
+  }
+  function(i) {
+    cat(sprintf("%3.0f%%, %0.f mins left\n", 100*i/n, (proc.time()-t0)[3] * (n-i)/(60*i)))
+  }
+}
+
+
 ##' .. content for \description{} (no empty lines) ..
 ##'
 ##' .. content for \details{} ..
