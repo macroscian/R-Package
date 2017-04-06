@@ -112,12 +112,16 @@ convertContrasts <- function(contr, dds, to="standard") {
 ##' @param dds the DESeq object to disect
 ##' @return A list of un-recalculated DESeq object.
 ##' @author 
-all2 <- function(dds) {
+all2 <- function(dds, base=NULL) {
   contrFactor <- attr(terms(design(dds)), "term.labels")
   if (length(contrFactor)!=1) stop("Tested for only one design factor")
   f1 <- dds[[contrFactor[1]]]
   ddsList <- list()
-  combs <- combn(levels(f1), 2)
+  if (is.null(base)) {
+      combs <- combn(levels(f1), 2)
+    } else {
+    combs <- rbind(levels(f1)[levels(f1)!=base], base)
+    }
   for (i in 1:ncol(combs)) {
     tmp <- dds[,f1 %in% combs[,i]]
     colData(tmp) <- droplevels(colData(tmp))
