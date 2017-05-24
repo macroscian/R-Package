@@ -144,13 +144,13 @@ params_init <- function(...) {
     function(...) {
         if (length(names(list(...)))>0)
             argu <<- modifyList(argu, list(...))
-        vers <- try(system2("git", "log -1 --pretty=format:%h", stdout=TRUE, stderr=FALSE), silent=TRUE)
+        vers <- try(suppressWarnings(system2("git", "log -1 --pretty=format:%h", stdout=TRUE, stderr=FALSE)), silent=TRUE)
         gitTag <- try(suppressWarnings(system2("git", "describe --tags --exact", stdout=TRUE, stderr=FALSE)), silent=TRUE)
         if (class(gitTag)=="try-error" || (!is.null(attr(gitTag, "status")) && attr(gitTag, "status")!=0)) {
           gitTag <- NA
         }
         if (length(vers)==0 || class(vers)=="try-error") {
-          vers <- "Not under Version Control!"
+          vers <- "uncontrolled"
           gitTag <- NA
         } else {
           if (any(grepl("^ M",system2("git", "status --porcelain", stdout=TRUE, stderr=FALSE)))) {
