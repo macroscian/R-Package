@@ -69,16 +69,16 @@ rerun <- function(fname, newFile) {
 projectFromDir <- function() {
   parts <- strsplit(getwd(), "/")[[1]]
   if (length(parts)!=10 || parts[7]!="projects") {
-    stop("Not in project directory")
-    return
-  }
-  res <- list(
-    bioinf=parts[6],
-    lab=parts[8],
-    scientist=parts[9],
-    project=parts[10]
+    res <- list(type=NA)
+  } else {
+    res <- list(
+      bioinf=parts[6],
+      lab=parts[8],
+      scientist=parts[9],
+      project=parts[10]
     )
-  res$type <- names(Filter(function(x) res$lab %in% dir(x), list("stp"="/camp/stp", "lab"="/camp/lab")))
+    res$type <- names(Filter(function(x) res$lab %in% dir(x), list("stp"="/camp/stp", "lab"="/camp/lab")))
+  }
   res
 }
   
@@ -104,24 +104,37 @@ derivedDir <- function(target, create=FALSE) { #relies on environment variables 
 derivedDirs <- function(publish=NA, subResults=NA) { #relies on environment variables set up in ~/.bashrc
   parts <- projectFromDir()
   prefix <- sub("/$", "", Sys.getenv("my_lab", unset="."))
-  res <- with(parts,
-              list(
-                wd=getwd(),
-                results="results",
-                objects="objects",
-                data="data",
-                output=file.path(prefix, "outputs", lab, scientist, "gavin.kelly", project, publish),
-                html=file.path(prefix, "www", bioinf, "public_html/LIVE", lab, scientist, project),
-                web=file.path(paste0("https://shiny-bioinformatics.crick.ac.uk/~",bioinf),
-                              lab, scientist, project),
-                input=file.path("//data.thecrick.org",
-                                sprintf("%s%s", ifelse(type=="lab", "lab-", ""), lab),
-                                "input", "babs", scientist, Sys.getenv("my_emailname"), project, publish)
-              )
-              )
+  if (length(parts)==1) {
+    res <- list(
+      wd=getwd(),
+      results="results",
+      objects="objects",
+      data="data",
+      output="results",
+      html="results",
+      web="results",
+      input="data"
+    )
+  } else {
+    res <- with(parts,
+                list(
+                  wd=getwd(),
+                  results="results",
+                  objects="objects",
+                  data="data",
+                  output=file.path(prefix, "outputs", lab, scientist, "gavin.kelly", project, publish),
+                  html=file.path(prefix, "www", bioinf, "public_html/LIVE", lab, scientist, project),
+                  web=file.path(paste0("https://shiny-bioinformatics.crick.ac.uk/~",bioinf),
+                                lab, scientist, project),
+                  input=file.path("//data.thecrick.org",
+                                  sprintf("%s%s", ifelse(type=="lab", "lab-", ""), lab),
+                                  "input", "babs", scientist, Sys.getenv("my_emailname"), project, publish)
+                )
+                )
+  }
   if (!is.na(subResults)) {
     res$results <- file.path(res$results, subResults)
-    }
+  }
   if (is.na(publish)) {
     res$output=res$results
     res$input <- sub("/NA$", "", res$input)
