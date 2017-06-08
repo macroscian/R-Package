@@ -1,3 +1,22 @@
+##' Generate a named dir-list 
+##'
+##' List files in a directory, renaming to something sensible
+##' @title
+##' @param extractPattern whether to replace based on a submatch
+##' @param replaceString what to replace
+filesAsList <- function(path, extractPattern=TRUE, replaceString="\\1", ...) {
+  fs <- dir(path, full.name=TRUE, ...)
+  if (extractPattern) {
+    fs <- setNames(as.list(fs), gsub(list(...)$pattern,
+                                     replaceString,
+                                     basename(fs)))
+  } else {
+    fs <- setNames(as.list(fs), basename(fs))
+  }
+  fs
+}
+
+
 ##' Loop counter
 ##'
 ##' show progress through a loop
