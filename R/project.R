@@ -123,9 +123,9 @@ derivedDirs <- function(publish=NA, subResults=NA) { #relies on environment vari
                   objects="objects",
                   data="data",
                   output=file.path(prefix, "outputs", lab, scientist, "gavin.kelly", project, publish),
-                  html=file.path(prefix, "www", bioinf, "public_html/LIVE", lab, scientist, project),
+                  html=file.path(prefix, "www", bioinf, "public_html/LIVE/projects", lab, scientist, project),
                   web=file.path(paste0("https://shiny-bioinformatics.crick.ac.uk/~",bioinf),
-                                lab, scientist, project),
+                                "projects", lab, scientist, project),
                   input=file.path("//data.thecrick.org",
                                   sprintf("%s%s", ifelse(type=="lab", "lab-", ""), lab),
                                   "input", "babs", scientist, Sys.getenv("my_emailname"), project, publish)
