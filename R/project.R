@@ -144,7 +144,28 @@ derivedDirs <- function(publish=NA, subResults=NA) { #relies on environment vari
   res
 }
 
+#' Supply pretty-printed git stats
+#'
+#'
+#'
 
+git_stats <- function() {
+  vers <- try(suppressWarnings(system2("git", "log -1 --pretty=format:%h", stdout=TRUE, stderr=FALSE)), silent=TRUE)
+  gitTag <- try(suppressWarnings(system2("git", "describe --tags --exact", stdout=TRUE, stderr=FALSE)), silent=TRUE)
+  if (class(gitTag)=="try-error" || (!is.null(attr(gitTag, "status")) && attr(gitTag, "status")!=0)) {
+    gitTag <- NA
+  }
+  if (length(vers)==0 || class(vers)=="try-error") {
+    vers <- "uncontrolled"
+    gitTag <- NA
+  } else {
+    if (any(grepl("^ M",system2("git", "status --porcelain", stdout=TRUE, stderr=FALSE)))) {
+      vers <- sprintf("%s-M", vers)
+      gitTag <- NA
+    }
+  }
+  list(version=vers, tag=gitTag)
+}
   
 #' Initialise a closure that will contain variables that define the analysis
 #'
@@ -157,24 +178,11 @@ params_init <- function(...) {
     function(...) {
         if (length(names(list(...)))>0)
             argu <<- modifyList(argu, list(...))
-        vers <- try(suppressWarnings(system2("git", "log -1 --pretty=format:%h", stdout=TRUE, stderr=FALSE)), silent=TRUE)
-        gitTag <- try(suppressWarnings(system2("git", "describe --tags --exact", stdout=TRUE, stderr=FALSE)), silent=TRUE)
-        if (class(gitTag)=="try-error" || (!is.null(attr(gitTag, "status")) && attr(gitTag, "status")!=0)) {
-          gitTag <- NA
-        }
-        if (length(vers)==0 || class(vers)=="try-error") {
-          vers <- "uncontrolled"
-          gitTag <- NA
-        } else {
-          if (any(grepl("^ M",system2("git", "status --porcelain", stdout=TRUE, stderr=FALSE)))) {
-            vers <- sprintf("%s-M", vers)
-            gitTag <- NA
-          }
-        }
+        vers <- git_stats()
         prm <- c(argu,
                  wd=getwd(),
-                 fVersion = vers,
-                 release=gitTag
+                 fVersion = vers$version,
+                 release=vers$tag
                  )
         if (!is.na(grepl(Sys.getenv("my_projects", unset=NA),  getwd()))) {
           pth <- strsplit(sub(Sys.getenv("my_projects"), "",  getwd()), "/")[[1]]
@@ -232,3 +240,23 @@ counter <- local({
         sprintf("%s%X",prefix, ii[[prefix]]-1)
     }
 })
+
+
+#' Open a device with a trackable name
+#'
+#' Can be used with 'pdf' 'write.table' etc
+#'
+#' @param dev contains the function which will be called (which itself will get its 'file' param filled in automatically)
+#' @param file string will be used as a starting point for the filename.  If it doesn't contain an extension, will predict from 'dev'
+#' @return the filename actually used
+vDevice <- function(dev, file="plot", ..., dir="results") {
+  if (!grepl("\\.", file)) file <- paste0(file, ".", as.character(substitute(dev)))
+  gv <- git_stats()$version
+  dName <- file.path(dir, params("fVersion"))
+  if (!dir.exists(dName)) {
+    dir.create(dName)
+  }
+  file=file.path(dName,sub("([^.]*)(.*)",paste0("\\1_", gv, "\\2"), file))
+  dev(..., file= file)
+  file
+  }
