@@ -6,14 +6,16 @@
 #' @param alpha the false discovery rate used to choose significant genes
 #' @return list containing the gene counts
 updown.DESeqResults <- function(object, alpha=0.05) {
-    notallzero <- sum(object$baseMean > 0)
+  notallzero <- sum(object$baseMean > 0)
+  allZero <- sum(object$baseMean == 0)
     up <- sum(object$padj < alpha & object$log2FoldChange > 0, 
               na.rm = TRUE)
     down <- sum(object$padj < alpha & object$log2FoldChange < 
                     0, na.rm = TRUE)
     filt <- sum(!is.na(object$pvalue) & is.na(object$padj))
     outlier <- sum(object$baseMean > 0 & is.na(object$pvalue))
-    list(nonzero=notallzero, up=up, down=down, outliers=outlier, lowCount=filt)
+  #    list(nonzero=notallzero, allzero=allZero,up=up, down=down, outliers=outlier, lowCount=filt)
+      list(`Non zero`=notallzero, `All zero`=allZero, Up=up, Down=down, Outliers=outlier, `Low count`=filt)
 }
 
 #' Read fastqc files
