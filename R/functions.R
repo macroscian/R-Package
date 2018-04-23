@@ -16,6 +16,16 @@ filesAsList <- function(path, extractPattern=TRUE, replaceString="\\1", ...) {
   fs
 }
 
+##' Save a TSV files
+##'
+##' 
+##' @title
+##' @param file filename
+##' @param x dataframe to be saved
+txt <- function(file, x) {
+  write.table(x, file=file, quote=FALSE, sep="\t", col.names=NA)
+}
+
 
 ##' Loop counter
 ##'
