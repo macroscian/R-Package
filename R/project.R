@@ -249,10 +249,19 @@ counter <- local({
 #' @param dev contains the function which will be called (which itself will get its 'file' param filled in automatically)
 #' @param file string will be used as a starting point for the filename.  If it doesn't contain an extension, will predict from 'dev'
 #' @return the filename actually used
-vDevice <- function(dev, file="plot", ..., dir="results") {
-  if (!grepl("\\.", file)) file <- paste0(file, ".", as.character(substitute(dev)))
-  gv <- git_stats()$version
-  dName <- file.path(dir, params("fVersion"))
+vDevice <- function(dev=c, file="plot", ..., dir="results") {
+  if (!grepl("\\.", file)) {
+    devstr <- as.character(substitute(dev)) # e.g. 'pdf', 'write.txt'
+    devstr <- sub(".*\\.", "", devstr) # e.g. 'pdf', 'txt'
+    file <- paste0(file, ".", devstr)
+  }
+  g <- git_stats()
+  gv <- g$version
+  if (is.na(g$tag)) {
+    dName <- file.path(dir, params("fVersion"))
+  } else {
+    dName <- file.path(dir, g$tag)
+  }
   if (!dir.exists(dName)) {
     dir.create(dName)
   }
